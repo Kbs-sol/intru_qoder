@@ -7,8 +7,8 @@ SITE_NAME = "intru"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "intru-in-db"
-database_id = "your-database-id-here"
+database_name = "intru_qoderdb"
+database_id = "75cdf5fa-7a35-4bd8-8988-a98e68e66aa4"
 
 [[r2_buckets]]
 binding = "R2_BUCKET"
