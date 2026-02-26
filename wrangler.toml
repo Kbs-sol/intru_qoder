@@ -8,7 +8,9 @@ SITE_NAME = "intru"
 [[d1_databases]]
 binding = "DB"
 database_name = "intru-in-db"
-database_id = "your-database-id-here"
+database_id = "your-database-id-here"  # Replace with your actual D1 database ID from Cloudflare Dashboard
+# For local development, run: npx wrangler d1 execute intru-in-db --local --file=./schema.sql
+# Then seed: npx wrangler d1 execute intru-in-db --local --file=./seed.sql
 
 [[r2_buckets]]
 binding = "R2_BUCKET"
