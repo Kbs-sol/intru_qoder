@@ -1,0 +1,15 @@
+name = "intru-in"
+compatibility_date = "2025-01-01"
+
+[vars]
+SITE_URL = "https://intru.in"
+SITE_NAME = "intru"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "intru-in-db"
+database_id = "your-database-id-here"
+
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "intru-images"

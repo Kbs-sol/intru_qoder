@@ -1,0 +1,163 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ProductCard from '@/components/ProductCard.astro';
+import SEOHead from '@/components/SEOHead.astro';
+import { getProductById, getProductsByCategory } from '@/lib/db';
+import { formatPrice } from '@/lib/utils';
+
+const { id } = Astro.params;
+if (!id) return Astro.redirect('/products');
+
+const db = Astro.locals.runtime.env.DB;
+let product: Awaited<ReturnType<typeof getProductById>> = null;
+let related: Awaited<ReturnType<typeof getProductsByCategory>> = [];
+
+try {
+  product = await getProductById(db, id);
+  if (product) {
+    related = (await getProductsByCategory(db, product.category)).filter(p => p.id !== id).slice(0, 4);
+  }
+} catch {
+  // DB not connected
+}
+
+if (!product) return Astro.redirect('/products');
+
+const displayPrice = product.sale_price ?? product.price;
+const sizes = ['S', 'M', 'L', 'XL', 'XXL'];
+const productUrl = `https://intru.in/products/${product.id}`;
+---
+
+<BaseLayout
+  title={`${product.name} | intru`}
+  description={product.description}
+>
+  <SEOHead
+    type="product"
+    data={{
+      name: product.name,
+      description: product.description,
+      image: product.image_url,
+      price: product.price,
+      salePrice: product.sale_price,
+      url: productUrl,
+    }}
+  />
+  <SEOHead
+    type="breadcrumb"
+    data={{
+      items: [
+        { name: 'Home', url: 'https://intru.in' },
+        { name: 'Collection', url: 'https://intru.in/products' },
+        { name: product.name, url: productUrl },
+      ],
+    }}
+  />
+
+  <div class="container-custom py-24 md:py-32">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
+      <!-- Product Image -->
+      <div class="aspect-[4/5] overflow-hidden bg-gray-50 rounded-sm">
+        <img
+          src={product.image_url}
+          alt={product.name}
+          class="w-full h-full object-cover"
+          loading="eager"
+        />
+      </div>
+
+      <!-- Product Info -->
+      <div class="flex flex-col justify-center space-y-8" x-data={`{ selectedSize: 'M', quantity: 1 }`}>
+        <div>
+          <p class="text-[0.625rem] font-bold uppercase tracking-[0.3em] text-gray-400 mb-3">{product.category}</p>
+          <h1 class="text-3xl md:text-5xl font-bold tracking-tighter uppercase leading-tight">{product.name}</h1>
+        </div>
+
+        <!-- Price -->
+        <div class="flex items-center gap-4">
+          <span class:list={['text-2xl font-bold', product.sale_price ? 'text-red-600' : 'text-gray-900']}>
+            {formatPrice(displayPrice)}
+          </span>
+          {product.sale_price && (
+            <span class="text-lg text-gray-400 line-through">{formatPrice(product.price)}</span>
+          )}
+          {product.sale_price && (
+            <span class="bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded">
+              {Math.round(((product.price - product.sale_price) / product.price) * 100)}% OFF
+            </span>
+          )}
+        </div>
+
+        <!-- Size Selector -->
+        <div>
+          <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-gray-400 mb-4">Size</p>
+          <div class="flex gap-3">
+            {sizes.map(size => (
+              <button
+                type="button"
+                @click={`selectedSize = '${size}'`}
+                :class={`selectedSize === '${size}' ? 'bg-black text-white' : 'bg-gray-50 text-gray-700 hover:bg-gray-100'`}
+                class="w-12 h-12 flex items-center justify-center text-xs font-bold uppercase tracking-widest transition-all rounded-sm cursor-pointer"
+              >
+                {size}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <!-- Quantity -->
+        <div>
+          <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-gray-400 mb-4">Quantity</p>
+          <div class="flex items-center border border-gray-200 rounded-sm w-fit">
+            <button @click="quantity = Math.max(1, quantity - 1)" class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-black transition-colors cursor-pointer">&minus;</button>
+            <span x-text="quantity" class="w-12 h-10 flex items-center justify-center text-sm font-bold border-x border-gray-200"></span>
+            <button @click="quantity = Math.min(10, quantity + 1)" class="w-10 h-10 flex items-center justify-center text-gray-500 hover:text-black transition-colors cursor-pointer">+</button>
+          </div>
+        </div>
+
+        <!-- Add to Bag -->
+        <button
+          type="button"
+          @click={`$store.cart.add(${JSON.stringify({ id: product.id, name: product.name, price: product.price, sale_price: product.sale_price, image_url: product.image_url })}, selectedSize, quantity); quantity = 1`}
+          class="w-full bg-black text-white py-5 text-[0.6875rem] font-black uppercase tracking-widest hover:bg-gray-800 transition-colors cursor-pointer"
+        >
+          Add to Bag
+        </button>
+
+        <!-- Description -->
+        <div class="border-t border-gray-100 pt-8 space-y-4">
+          <h3 class="text-[0.625rem] font-bold uppercase tracking-[0.2em]">Description</h3>
+          <p class="text-sm text-gray-500 leading-relaxed">{product.description}</p>
+        </div>
+
+        <!-- Shipping Info -->
+        <div class="border-t border-gray-100 pt-6 space-y-3">
+          <div class="flex items-center gap-3 text-xs text-gray-500">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/></svg>
+            <span>Free shipping on prepaid orders</span>
+          </div>
+          <div class="flex items-center gap-3 text-xs text-gray-500">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"/></svg>
+            <span>Exchange within 36 hours of delivery</span>
+          </div>
+          <div class="flex items-center gap-3 text-xs text-gray-500">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+            <span>Secure checkout via Razorpay</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Related Products -->
+    {related.length > 0 && (
+      <div class="mt-32">
+        <h2 class="text-2xl font-bold uppercase tracking-tighter mb-12">You May Also Like</h2>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-x-4 md:gap-x-6 gap-y-12">
+          {related.map(p => (
+            <ProductCard product={p} />
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+</BaseLayout>

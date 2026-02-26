@@ -1,0 +1,174 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getSession } from '@/lib/auth';
+
+const session = await getSession(Astro.request, Astro.locals.runtime.env.AUTH_SECRET);
+---
+
+<BaseLayout title="Checkout | intru" description="Complete your order." noindex={true}>
+  <div class="container-custom py-24 md:py-32" x-data={`{
+    form: { name: '${session?.name || ''}', email: '${session?.email || ''}', phone: '', address: '', city: '', state: '', pincode: '' },
+    loading: false,
+    error: '',
+    async placeOrder() {
+      if (!this.form.name || !this.form.email || !this.form.phone || !this.form.address || !this.form.city || !this.form.state || !this.form.pincode) {
+        this.error = 'Please fill all fields';
+        return;
+      }
+      if ($store.cart.items.length === 0) {
+        this.error = 'Your cart is empty';
+        return;
+      }
+      this.loading = true;
+      this.error = '';
+      try {
+        const res = await fetch('/api/orders/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            items: $store.cart.items,
+            total: $store.cart.total,
+            customer: this.form,
+          })
+        });
+        const data = await res.json();
+        if (data.error) {
+          this.error = data.error;
+          this.loading = false;
+          return;
+        }
+        const options = {
+          key: data.razorpay_key_id,
+          amount: data.amount,
+          currency: 'INR',
+          name: 'intru',
+          description: 'Order Payment',
+          order_id: data.razorpay_order_id,
+          prefill: { name: this.form.name, email: this.form.email, contact: this.form.phone },
+          theme: { color: '#000000' },
+          handler: async (response) => {
+            const verifyRes = await fetch('/api/orders/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                order_id: data.order_id,
+              })
+            });
+            const vData = await verifyRes.json();
+            if (vData.verified) {
+              $store.cart.clear();
+              window.location.href = '/checkout/success?order=' + data.order_id;
+            } else {
+              this.error = 'Payment verification failed. Please contact support.';
+              this.loading = false;
+            }
+          },
+          modal: {
+            ondismiss: () => { this.loading = false; }
+          }
+        };
+        const rzp = new Razorpay(options);
+        rzp.open();
+      } catch (e) {
+        this.error = 'Something went wrong. Please try again.';
+        this.loading = false;
+      }
+    }
+  }`}>
+    <h1 class="text-4xl md:text-6xl font-bold tracking-tighter uppercase leading-none mb-16">Checkout</h1>
+
+    <!-- Not logged in warning -->
+    {!session && (
+      <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-sm mb-8">
+        <p class="text-sm text-yellow-800">
+          <a href="/auth/login" class="font-bold underline">Sign in</a> for a faster checkout experience. You can also continue as guest.
+        </p>
+      </div>
+    )}
+
+    <template x-if="error">
+      <div class="bg-red-50 text-red-600 text-sm font-medium p-4 rounded-sm mb-8" x-text="error"></div>
+    </template>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-16">
+      <!-- Shipping Form -->
+      <div class="lg:col-span-2 space-y-6">
+        <h2 class="text-[0.625rem] font-black uppercase tracking-[0.3em] mb-4">Shipping Details</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="text-[0.625rem] font-bold uppercase tracking-widest text-gray-500 block mb-2">Full Name</label>
+            <input x-model="form.name" type="text" required class="w-full border border-gray-200 px-4 py-3 text-sm outline-none focus:border-black transition-colors rounded-sm" />
+          </div>
+          <div>
+            <label class="text-[0.625rem] font-bold uppercase tracking-widest text-gray-500 block mb-2">Email</label>
+            <input x-model="form.email" type="email" required class="w-full border border-gray-200 px-4 py-3 text-sm outline-none focus:border-black transition-colors rounded-sm" />
+          </div>
+          <div class="md:col-span-2">
+            <label class="text-[0.625rem] font-bold uppercase tracking-widest text-gray-500 block mb-2">Phone</label>
+            <input x-model="form.phone" type="tel" required class="w-full border border-gray-200 px-4 py-3 text-sm outline-none focus:border-black transition-colors rounded-sm" placeholder="+91" />
+          </div>
+          <div class="md:col-span-2">
+            <label class="text-[0.625rem] font-bold uppercase tracking-widest text-gray-500 block mb-2">Address</label>
+            <textarea x-model="form.address" required rows="2" class="w-full border border-gray-200 px-4 py-3 text-sm outline-none focus:border-black transition-colors rounded-sm resize-none"></textarea>
+          </div>
+          <div>
+            <label class="text-[0.625rem] font-bold uppercase tracking-widest text-gray-500 block mb-2">City</label>
+            <input x-model="form.city" type="text" required class="w-full border border-gray-200 px-4 py-3 text-sm outline-none focus:border-black transition-colors rounded-sm" />
+          </div>
+          <div>
+            <label class="text-[0.625rem] font-bold uppercase tracking-widest text-gray-500 block mb-2">State</label>
+            <input x-model="form.state" type="text" required class="w-full border border-gray-200 px-4 py-3 text-sm outline-none focus:border-black transition-colors rounded-sm" />
+          </div>
+          <div>
+            <label class="text-[0.625rem] font-bold uppercase tracking-widest text-gray-500 block mb-2">Pincode</label>
+            <input x-model="form.pincode" type="text" required class="w-full border border-gray-200 px-4 py-3 text-sm outline-none focus:border-black transition-colors rounded-sm" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="lg:col-span-1">
+        <div class="bg-gray-50 p-8 rounded-sm sticky top-32">
+          <h3 class="text-[0.625rem] font-black uppercase tracking-[0.3em] mb-8">Order Summary</h3>
+          <div class="space-y-4 mb-6">
+            <template x-for="item in $store.cart.items" :key="item.key">
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500"><span x-text="item.name"></span> <span class="text-gray-300">x<span x-text="item.quantity"></span></span></span>
+                <span class="font-bold" x-text="'₹' + (item.price * item.quantity).toLocaleString('en-IN')"></span>
+              </div>
+            </template>
+          </div>
+          <div class="border-t border-gray-200 pt-4 space-y-3 mb-8">
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500">Subtotal</span>
+              <span class="font-bold" x-text="'₹' + $store.cart.total.toLocaleString('en-IN')"></span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-500">Shipping</span>
+              <span class="font-bold text-green-600">Free</span>
+            </div>
+            <div class="border-t border-gray-200 pt-3 flex justify-between text-base">
+              <span class="font-bold">Total</span>
+              <span class="font-bold" x-text="'₹' + $store.cart.total.toLocaleString('en-IN')"></span>
+            </div>
+          </div>
+          <button
+            @click="placeOrder()"
+            :disabled="loading"
+            class="w-full bg-black text-white py-4 text-[0.6875rem] font-black uppercase tracking-widest hover:bg-gray-800 transition-colors disabled:opacity-50 cursor-pointer"
+          >
+            <span x-show="!loading">Pay Now</span>
+            <span x-show="loading" x-cloak>Processing...</span>
+          </button>
+          <p class="text-[0.5rem] text-gray-400 text-center mt-4 uppercase tracking-widest">Secured by Razorpay</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Razorpay Script -->
+  <script is:inline src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</BaseLayout>

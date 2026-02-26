@@ -1,0 +1,66 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ProductCard from '@/components/ProductCard.astro';
+import { getProducts } from '@/lib/db';
+
+const db = Astro.locals.runtime.env.DB;
+let products: Awaited<ReturnType<typeof getProducts>> = [];
+
+try {
+  products = await getProducts(db);
+} catch {
+  // DB not connected
+}
+
+const category = Astro.url.searchParams.get('category');
+const filtered = category ? products.filter(p => p.category === category) : products;
+const categories = ['All', ...new Set(products.map(p => p.category))];
+---
+
+<BaseLayout
+  title="Shop Collection | intru"
+  description="Shop minimalist streetwear. Oversized t-shirts, shirts, and more. Premium quality, limited drops. Starting at Rs 699."
+>
+  <div class="container-custom py-24 md:py-32">
+    <!-- Header -->
+    <div class="flex flex-col mb-20 space-y-12">
+      <div class="max-w-2xl">
+        <h1 class="text-5xl md:text-7xl font-bold tracking-tighter uppercase leading-[0.9] mb-6">The Collection</h1>
+        <p class="text-gray-500 font-medium text-lg leading-relaxed">
+          Curated minimalist streetwear built from scratch with a shared love for everyday style.
+        </p>
+      </div>
+
+      <!-- Filters -->
+      <div class="flex flex-wrap gap-3 border-b border-gray-100 pb-8">
+        {categories.map(cat => (
+          <a
+            href={cat === 'All' ? '/products' : `/products?category=${encodeURIComponent(cat)}`}
+            class:list={[
+              'px-6 py-2.5 rounded-full text-[0.625rem] font-bold uppercase tracking-widest transition-all duration-300',
+              (!category && cat === 'All') || category === cat
+                ? 'bg-black text-white'
+                : 'bg-gray-50 text-gray-400 hover:bg-gray-100',
+            ]}
+          >
+            {cat}
+          </a>
+        ))}
+      </div>
+    </div>
+
+    <!-- Products Grid -->
+    {filtered.length > 0 ? (
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-x-4 md:gap-x-6 gap-y-12">
+        {filtered.map(product => (
+          <ProductCard product={product} />
+        ))}
+      </div>
+    ) : (
+      <div class="text-center py-40">
+        <h3 class="text-xl font-bold uppercase tracking-widest mb-4">No essentials found</h3>
+        <p class="text-gray-400 text-sm">Try a different category.</p>
+      </div>
+    )}
+  </div>
+</BaseLayout>

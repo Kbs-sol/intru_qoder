@@ -1,0 +1,94 @@
+---
+import { getSession } from '@/lib/auth';
+
+const session = await getSession(Astro.request, Astro.locals.runtime.env.AUTH_SECRET);
+if (!session || session.role !== 'admin') {
+  return Astro.redirect('/admin/login');
+}
+
+export interface Props {
+  title?: string;
+  activeTab?: string;
+}
+
+const { title = 'Admin | intru', activeTab = 'dashboard' } = Astro.props;
+
+const tabs = [
+  { id: 'dashboard', label: 'Dashboard', href: '/admin' },
+  { id: 'products', label: 'Products', href: '/admin/products' },
+  { id: 'pages', label: 'Pages', href: '/admin/pages' },
+  { id: 'orders', label: 'Orders', href: '/admin/orders' },
+];
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="antialiased bg-gray-50 text-gray-900 font-sans" style="font-family: 'Inter', sans-serif;">
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-gray-100 flex-shrink-0 hidden md:flex flex-col">
+      <div class="p-6 border-b border-gray-100">
+        <a href="/" class="font-black text-2xl tracking-tighter" style="font-family: 'Outfit', sans-serif;">intru</a>
+        <p class="text-xs text-gray-400 mt-1">Admin Panel</p>
+      </div>
+      <nav class="flex-1 p-4 space-y-1">
+        {tabs.map(tab => (
+          <a
+            href={tab.href}
+            class:list={[
+              'block px-4 py-3 rounded-lg text-sm font-medium transition-colors',
+              activeTab === tab.id ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-50',
+            ]}
+          >
+            {tab.label}
+          </a>
+        ))}
+      </nav>
+      <div class="p-4 border-t border-gray-100">
+        <p class="text-xs text-gray-400 mb-2">{session.email}</p>
+        <a href="/api/auth/logout" class="text-xs text-red-500 hover:text-red-700 font-medium">Sign Out</a>
+      </div>
+    </aside>
+
+    <!-- Mobile Header -->
+    <div class="md:hidden fixed top-0 left-0 right-0 bg-white border-b border-gray-100 z-50 px-4 py-3">
+      <div class="flex items-center justify-between">
+        <a href="/" class="font-black text-xl tracking-tighter" style="font-family: 'Outfit', sans-serif;">intru</a>
+        <div class="flex gap-2 overflow-x-auto">
+          {tabs.map(tab => (
+            <a
+              href={tab.href}
+              class:list={[
+                'text-xs font-medium px-3 py-1.5 rounded-full whitespace-nowrap',
+                activeTab === tab.id ? 'bg-black text-white' : 'bg-gray-100 text-gray-600',
+              ]}
+            >
+              {tab.label}
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <main class="flex-1 p-6 md:p-8 md:pt-8 pt-20">
+      <slot />
+    </main>
+  </div>
+
+  <style is:global>
+    @import '../styles/global.css';
+    [x-cloak] { display: none !important; }
+  </style>
+</body>
+</html>

@@ -1,0 +1,296 @@
+---
+export interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+  canonical?: string;
+  noindex?: boolean;
+}
+
+const {
+  title = 'intru | Minimal Streetwear India',
+  description = 'Built from scratch with a shared love for minimalism & everyday style. Oversized fits, limited drops. Premium quality Indian streetwear.',
+  ogImage = '',
+  canonical,
+  noindex = false,
+} = Astro.props;
+
+const siteUrl = 'https://intru.in';
+const canonicalUrl = canonical || new URL(Astro.url.pathname, siteUrl).href;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <meta name="keywords" content="streetwear, minimal fashion, oversized clothing, Indian streetwear, premium t-shirts, intru, oversized t-shirts India" />
+  <meta name="author" content="intru" />
+  <link rel="canonical" href={canonicalUrl} />
+
+  {noindex && <meta name="robots" content="noindex, nofollow" />}
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={canonicalUrl} />
+  <meta property="og:site_name" content="intru" />
+  {ogImage && <meta property="og:image" content={ogImage} />}
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Favicon -->
+  <link rel="icon" href="/favicon.ico" />
+
+  <!-- Alpine.js -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="antialiased bg-white text-gray-900" x-data>
+  <!-- Announcement Bar -->
+  <div class="announcement-bar">
+    <div class="announcement-content">
+      <span class="announcement-item">COD now live — shop stress free, pay when it arrives</span>
+      <span class="announcement-separator">&bull;</span>
+      <span class="announcement-item">Free shipping on all prepaid orders across India</span>
+      <span class="announcement-separator">&bull;</span>
+      <span class="announcement-item">Limited drops, oversized fits</span>
+      <span class="announcement-separator">&bull;</span>
+      <span class="announcement-item">COD now live — shop stress free, pay when it arrives</span>
+      <span class="announcement-separator">&bull;</span>
+      <span class="announcement-item">Free shipping on all prepaid orders across India</span>
+      <span class="announcement-separator">&bull;</span>
+      <span class="announcement-item">Limited drops, oversized fits</span>
+      <span class="announcement-separator">&bull;</span>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <header
+    x-data="{ mobileOpen: false, scrolled: false }"
+    x-init="window.addEventListener('scroll', () => { scrolled = window.scrollY > 20 })"
+    :class="scrolled ? 'bg-white/90 backdrop-blur-xl border-b border-gray-100 py-3 shadow-sm' : 'bg-transparent border-b border-transparent py-5'"
+    class="fixed top-[2.625rem] left-0 right-0 z-50 transition-all duration-500"
+  >
+    <div class="container-custom mx-auto">
+      <div class="flex items-center justify-between relative">
+        <!-- Mobile Menu Toggle -->
+        <div class="flex-1 md:hidden">
+          <button @click="mobileOpen = !mobileOpen" class="p-2 -ml-2 text-black transition-transform active:scale-95" aria-label="Toggle menu">
+            <svg x-show="!mobileOpen" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+            <svg x-show="mobileOpen" x-cloak class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <!-- Desktop Nav -->
+        <nav class="hidden md:flex flex-1 items-center gap-10">
+          <a href="/" class="group relative text-[0.6875rem] font-bold tracking-[0.2em] uppercase text-gray-500 hover:text-black transition-colors">
+            Home
+            <span class="absolute -bottom-1 left-0 h-px bg-black transition-all duration-300 w-0 group-hover:w-full"></span>
+          </a>
+          <a href="/products" class="group relative text-[0.6875rem] font-bold tracking-[0.2em] uppercase text-gray-500 hover:text-black transition-colors">
+            Collection
+            <span class="absolute -bottom-1 left-0 h-px bg-black transition-all duration-300 w-0 group-hover:w-full"></span>
+          </a>
+          <a href="/about" class="group relative text-[0.6875rem] font-bold tracking-[0.2em] uppercase text-gray-500 hover:text-black transition-colors">
+            About
+            <span class="absolute -bottom-1 left-0 h-px bg-black transition-all duration-300 w-0 group-hover:w-full"></span>
+          </a>
+        </nav>
+
+        <!-- Logo -->
+        <a href="/" class="font-display font-black text-2xl md:text-3xl tracking-tighter hover:opacity-70 transition-opacity flex-shrink-0">
+          intru
+        </a>
+
+        <!-- Right Actions -->
+        <div class="flex flex-1 items-center justify-end gap-1 md:gap-6">
+          <a href="/auth/login" class="hidden md:inline text-[0.6875rem] font-bold text-gray-500 hover:text-black tracking-[0.2em] uppercase transition-colors">
+            Login
+          </a>
+          <!-- Cart Button -->
+          <a href="/cart" class="group relative flex items-center gap-1.5 p-2 text-black transition-transform active:scale-95" aria-label="Cart">
+            <span class="hidden md:inline text-[0.6875rem] font-bold uppercase tracking-[0.2em] text-gray-500 group-hover:text-black transition-colors">Bag</span>
+            <div class="relative">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/></svg>
+              <span
+                x-show="$store.cart.count > 0"
+                x-text="$store.cart.count"
+                x-cloak
+                class="absolute -top-1.5 -right-1.5 bg-black text-white text-[0.5625rem] font-black w-4 h-4 flex items-center justify-center rounded-full"
+              ></span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <template x-teleport="body">
+      <div x-show="mobileOpen" x-cloak class="fixed inset-0 z-[200]">
+        <div class="fixed inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" @click="mobileOpen = false"></div>
+        <div class="fixed top-0 left-0 bottom-0 w-[85%] max-w-[400px] bg-white z-[201] shadow-2xl flex flex-col p-8 animate-slide-in-left">
+          <div class="flex justify-between items-center mb-16">
+            <span class="font-display font-black text-2xl tracking-tighter">intru</span>
+            <button @click="mobileOpen = false" class="p-2 -mr-2" aria-label="Close menu">
+              <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div class="flex flex-col space-y-8">
+            <a href="/" @click="mobileOpen = false" class="text-4xl font-bold uppercase tracking-tighter">Home</a>
+            <a href="/products" @click="mobileOpen = false" class="text-4xl font-bold uppercase tracking-tighter">Collection</a>
+            <a href="/about" @click="mobileOpen = false" class="text-4xl font-bold uppercase tracking-tighter">About</a>
+          </div>
+          <div class="mt-auto space-y-6">
+            <a href="/auth/login" class="block w-full bg-black text-white text-center py-4 text-[0.6875rem] font-black uppercase tracking-widest hover:bg-gray-800 transition-colors" @click="mobileOpen = false">Sign In</a>
+            <div class="flex justify-center gap-8 pt-4">
+              <a href="https://www.instagram.com/intru.in/" target="_blank" rel="noopener noreferrer" class="text-[0.625rem] font-bold uppercase tracking-widest text-gray-400">Instagram</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+  </header>
+
+  <!-- Main Content -->
+  <main class="min-h-screen">
+    <slot />
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container-custom">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="/" class="footer-logo">intru</a>
+          <p class="footer-description">
+            Built from scratch with a shared love for minimalism & everyday style. Designed in India, for the world.
+          </p>
+          <div class="footer-social">
+            <a href="https://www.instagram.com/intru.in/" target="_blank" rel="noopener noreferrer" class="footer-social-link">Instagram</a>
+          </div>
+        </div>
+        <div class="footer-column">
+          <h4 class="footer-heading">Shop</h4>
+          <ul class="footer-links">
+            <li><a href="/products">All Products</a></li>
+            <li><a href="/products?category=T-Shirts">T-Shirts</a></li>
+            <li><a href="/products?category=Shirts">Shirts</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4 class="footer-heading">Information</h4>
+          <ul class="footer-links">
+            <li><a href="/legal/shipping">Shipping & Delivery</a></li>
+            <li><a href="/legal/returns">Returns & Exchanges</a></li>
+            <li><a href="/about">About Us</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4 class="footer-heading">Legal</h4>
+          <ul class="footer-links">
+            <li><a href="/legal/terms">Terms & Conditions</a></li>
+            <li><a href="/legal/privacy">Privacy Policy</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4 class="footer-heading">Newsletter</h4>
+          <p class="footer-newsletter-text">Join our mailing list for updates.</p>
+          <form class="footer-newsletter-form" onsubmit="return false;">
+            <input type="email" placeholder="EMAIL" class="footer-newsletter-input" aria-label="Email address" />
+            <button type="submit" class="footer-newsletter-submit" aria-label="Subscribe">&rarr;</button>
+          </form>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 Intru Streetwear. All rights Reserved.</p>
+        <div class="footer-meta">
+          <span>Secured Payments</span>
+          <span>Express Shipping</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Cart Store (Alpine.js) -->
+  <script is:inline>
+    document.addEventListener('alpine:init', () => {
+      Alpine.store('cart', {
+        items: JSON.parse(localStorage.getItem('intru_cart') || '[]'),
+
+        add(product, size, qty) {
+          size = size || 'M';
+          qty = qty || 1;
+          const key = product.id + '_' + size;
+          const existing = this.items.find(i => i.key === key);
+          if (existing) {
+            existing.quantity += qty;
+          } else {
+            this.items.push({
+              key,
+              id: product.id,
+              name: product.name,
+              price: product.sale_price || product.price,
+              original_price: product.price,
+              image_url: product.image_url,
+              size,
+              quantity: qty,
+            });
+          }
+          this.save();
+        },
+
+        remove(key) {
+          this.items = this.items.filter(i => i.key !== key);
+          this.save();
+        },
+
+        updateQty(key, qty) {
+          const item = this.items.find(i => i.key === key);
+          if (item) {
+            if (qty <= 0) {
+              this.remove(key);
+            } else {
+              item.quantity = qty;
+              this.save();
+            }
+          }
+        },
+
+        clear() {
+          this.items = [];
+          this.save();
+        },
+
+        get count() {
+          return this.items.reduce((sum, i) => sum + i.quantity, 0);
+        },
+
+        get total() {
+          return this.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+        },
+
+        save() {
+          localStorage.setItem('intru_cart', JSON.stringify(this.items));
+        }
+      });
+    });
+  </script>
+
+  <style is:global>
+    @import '../styles/global.css';
+
+    [x-cloak] { display: none !important; }
+  </style>
+</body>
+</html>

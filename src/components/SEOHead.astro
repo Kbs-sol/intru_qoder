@@ -1,0 +1,71 @@
+---
+export interface Props {
+  type: 'product' | 'organization' | 'website' | 'breadcrumb';
+  data?: Record<string, unknown>;
+}
+
+const { type, data = {} } = Astro.props;
+
+function getSchema() {
+  switch (type) {
+    case 'product':
+      return {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: data.name,
+        description: data.description,
+        image: data.image,
+        brand: { '@type': 'Brand', name: 'intru' },
+        offers: {
+          '@type': 'Offer',
+          price: data.salePrice || data.price,
+          priceCurrency: 'INR',
+          availability: 'https://schema.org/InStock',
+          url: data.url,
+        },
+      };
+    case 'organization':
+      return {
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        name: 'intru',
+        url: 'https://intru.in',
+        logo: 'https://intru.in/favicon.ico',
+        sameAs: ['https://www.instagram.com/intru.in/'],
+        description: 'Minimalist streetwear brand from India. Oversized fits, limited drops, premium quality.',
+      };
+    case 'website':
+      return {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: 'intru',
+        url: 'https://intru.in',
+        description: 'Built from scratch with a shared love for minimalism & everyday style.',
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: 'https://intru.in/products?q={search_term_string}',
+          'query-input': 'required name=search_term_string',
+        },
+      };
+    case 'breadcrumb':
+      return {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: (data.items as Array<{ name: string; url: string }>)?.map((item, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          name: item.name,
+          item: item.url,
+        })),
+      };
+    default:
+      return null;
+  }
+}
+
+const schema = getSchema();
+---
+
+{schema && (
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+)}

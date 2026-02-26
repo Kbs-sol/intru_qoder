@@ -1,0 +1,86 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { formatPrice } from '@/lib/utils';
+---
+
+<BaseLayout title="Your Bag | intru" description="Review your shopping bag and proceed to checkout." noindex={true}>
+  <div class="container-custom py-24 md:py-32" x-data>
+    <h1 class="text-4xl md:text-6xl font-bold tracking-tighter uppercase leading-none mb-16">Your Bag</h1>
+
+    <!-- Empty Cart -->
+    <template x-if="$store.cart.items.length === 0">
+      <div class="text-center py-32">
+        <svg class="w-16 h-16 mx-auto text-gray-200 mb-6" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/></svg>
+        <h2 class="text-xl font-bold uppercase tracking-widest mb-4">Your bag is empty</h2>
+        <p class="text-gray-400 text-sm mb-8">Looks like you haven't added anything yet.</p>
+        <a href="/products" class="inline-block bg-black text-white px-12 py-4 text-[0.6875rem] font-black uppercase tracking-widest hover:bg-gray-800 transition-colors">
+          Shop Collection
+        </a>
+      </div>
+    </template>
+
+    <!-- Cart Items -->
+    <template x-if="$store.cart.items.length > 0">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-16">
+        <!-- Items -->
+        <div class="lg:col-span-2 space-y-0">
+          <template x-for="item in $store.cart.items" :key="item.key">
+            <div class="flex gap-6 py-8 border-b border-gray-100">
+              <a :href="`/products/${item.id}`" class="flex-shrink-0 w-24 h-32 bg-gray-50 overflow-hidden rounded-sm">
+                <img :src="item.image_url" :alt="item.name" class="w-full h-full object-cover" loading="lazy" />
+              </a>
+              <div class="flex-1 flex flex-col justify-between">
+                <div>
+                  <a :href="`/products/${item.id}`">
+                    <h3 class="text-sm font-medium tracking-tight" x-text="item.name"></h3>
+                  </a>
+                  <p class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-gray-400 mt-1">
+                    Size: <span x-text="item.size"></span>
+                  </p>
+                </div>
+                <div class="flex items-end justify-between mt-4">
+                  <div class="flex items-center border border-gray-200 rounded-sm">
+                    <button @click="$store.cart.updateQty(item.key, item.quantity - 1)" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-black cursor-pointer">&minus;</button>
+                    <span x-text="item.quantity" class="w-8 h-8 flex items-center justify-center text-xs font-bold border-x border-gray-200"></span>
+                    <button @click="$store.cart.updateQty(item.key, item.quantity + 1)" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-black cursor-pointer">+</button>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-sm font-bold" x-text="'₹' + (item.price * item.quantity).toLocaleString('en-IN')"></p>
+                    <button @click="$store.cart.remove(item.key)" class="text-[0.625rem] text-red-500 font-bold uppercase tracking-widest mt-1 hover:text-red-700 cursor-pointer">Remove</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <!-- Summary -->
+        <div class="lg:col-span-1">
+          <div class="bg-gray-50 p-8 rounded-sm sticky top-32">
+            <h3 class="text-[0.625rem] font-black uppercase tracking-[0.3em] mb-8">Order Summary</h3>
+            <div class="space-y-4 mb-8">
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500">Subtotal</span>
+                <span class="font-bold" x-text="'₹' + $store.cart.total.toLocaleString('en-IN')"></span>
+              </div>
+              <div class="flex justify-between text-sm">
+                <span class="text-gray-500">Shipping</span>
+                <span class="font-bold text-green-600">Free</span>
+              </div>
+              <div class="border-t border-gray-200 pt-4 flex justify-between text-base">
+                <span class="font-bold">Total</span>
+                <span class="font-bold" x-text="'₹' + $store.cart.total.toLocaleString('en-IN')"></span>
+              </div>
+            </div>
+            <a href="/checkout" class="block w-full bg-black text-white text-center py-4 text-[0.6875rem] font-black uppercase tracking-widest hover:bg-gray-800 transition-colors">
+              Checkout
+            </a>
+            <a href="/products" class="block text-center text-[0.625rem] font-bold uppercase tracking-widest text-gray-400 mt-4 hover:text-black transition-colors">
+              Continue Shopping
+            </a>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+</BaseLayout>

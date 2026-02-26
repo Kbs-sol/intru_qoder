@@ -1,0 +1,96 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import SEOHead from '@/components/SEOHead.astro';
+---
+
+<BaseLayout
+  title="Our Story | intru - Minimalist Streetwear"
+  description="Founded in 2024, intru is a minimalist streetwear brand built from scratch in India. Premium quality, oversized fits, and a shared love for everyday style."
+>
+  <SEOHead type="organization" />
+  <SEOHead type="breadcrumb" data={{ items: [{ name: 'Home', url: 'https://intru.in' }, { name: 'Our Story', url: 'https://intru.in/about' }] }} />
+
+  <div class="pb-20">
+    <!-- Hero -->
+    <section class="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
+      <div class="absolute inset-0">
+        <img
+          src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=1000&auto=format&fit=crop"
+          alt="Intru Brand Story"
+          class="w-full h-full object-cover opacity-30"
+          loading="eager"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-white to-transparent"></div>
+      </div>
+      <div class="container-custom relative z-10 text-center max-w-3xl space-y-6">
+        <h1 class="text-5xl md:text-7xl font-display font-bold animate-fade-in-up">
+          Our Story
+        </h1>
+        <p class="text-xl text-gray-500 leading-relaxed animate-fade-in-up" style="animation-delay: 0.2s;">
+          Built from scratch in India with a shared love for minimalism & everyday style.
+        </p>
+      </div>
+    </section>
+
+    <!-- Philosophy -->
+    <section class="container-custom grid grid-cols-1 md:grid-cols-2 gap-16 items-center py-16">
+      <div class="space-y-6">
+        <h2 class="text-3xl font-display font-bold">Our Philosophy</h2>
+        <div class="space-y-4 text-gray-500 text-lg">
+          <p>
+            Founded in 2024, intru began with a simple question: Why must we choose between
+            aesthetics and utility? We set out to bridge that gap, designing clothes that are
+            as beautiful to look at as they are comfortable to wear.
+          </p>
+          <p>
+            From oversized tees to relaxed-fit shirts, every piece in our collection is crafted
+            with intention. We don't just sell products; we curate experiences that elevate your
+            everyday wardrobe.
+          </p>
+          <p>
+            We are committed to quality, comfort, and design excellence. Premium French Terry
+            fabrics, 240 GSM weight, and fits that let you move freely. When you choose intru,
+            you're choosing a lifestyle of intentionality and ease.
+          </p>
+        </div>
+      </div>
+      <div class="relative h-[500px] rounded-2xl overflow-hidden shadow-2xl">
+        <img
+          src="https://intru.in/cdn/shop/files/F51687B9-2BF2-43E0-988A-30272833B19E.jpg?v=1756359581&width=1920"
+          alt="Design Philosophy"
+          class="w-full h-full object-cover"
+          loading="lazy"
+        />
+      </div>
+    </section>
+
+    <!-- Values -->
+    <section class="bg-gray-50 py-20 mt-12">
+      <div class="container-custom">
+        <h2 class="text-3xl font-display font-bold text-center mb-12">Our Core Values</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
+          <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 text-center">
+            <h3 class="text-xl font-bold mb-4">Design First</h3>
+            <p class="text-gray-500">Aesthetics aren't an afterthought. They are the foundation of everything we do.</p>
+          </div>
+          <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 text-center">
+            <h3 class="text-xl font-bold mb-4">Uncompromising Quality</h3>
+            <p class="text-gray-500">We use only premium fabrics and obsess over every detail in manufacturing.</p>
+          </div>
+          <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 text-center">
+            <h3 class="text-xl font-bold mb-4">Customer Centric</h3>
+            <p class="text-gray-500">Your experience matters. From browsing to unboxing, we ensure perfection.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="container-custom py-20 text-center">
+      <h2 class="text-2xl font-bold uppercase tracking-tighter mb-6">Join the Movement</h2>
+      <a href="/products" class="inline-block bg-black text-white px-12 py-4 text-[0.6875rem] font-black uppercase tracking-widest hover:bg-gray-800 transition-colors">
+        Shop the Collection
+      </a>
+    </section>
+  </div>
+</BaseLayout>

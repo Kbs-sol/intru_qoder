@@ -1,0 +1,73 @@
+---
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import { getOrderStats, getAllProducts } from '@/lib/db';
+import { formatPrice } from '@/lib/utils';
+
+const db = Astro.locals.runtime.env.DB;
+let stats = { total_orders: 0, total_revenue: 0, paid_orders: 0 };
+let productCount = 0;
+
+try {
+  stats = await getOrderStats(db);
+  const products = await getAllProducts(db);
+  productCount = products.length;
+} catch {
+  // DB not connected
+}
+---
+
+<AdminLayout title="Dashboard | Admin" activeTab="dashboard">
+  <h1 class="text-2xl font-bold mb-8">Dashboard</h1>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+    <div class="bg-white p-6 rounded-lg border border-gray-100">
+      <p class="text-xs text-gray-400 font-medium uppercase tracking-wider mb-1">Total Orders</p>
+      <p class="text-3xl font-bold">{stats.total_orders}</p>
+    </div>
+    <div class="bg-white p-6 rounded-lg border border-gray-100">
+      <p class="text-xs text-gray-400 font-medium uppercase tracking-wider mb-1">Paid Orders</p>
+      <p class="text-3xl font-bold text-green-600">{stats.paid_orders}</p>
+    </div>
+    <div class="bg-white p-6 rounded-lg border border-gray-100">
+      <p class="text-xs text-gray-400 font-medium uppercase tracking-wider mb-1">Revenue</p>
+      <p class="text-3xl font-bold">{formatPrice(stats.total_revenue)}</p>
+    </div>
+    <div class="bg-white p-6 rounded-lg border border-gray-100">
+      <p class="text-xs text-gray-400 font-medium uppercase tracking-wider mb-1">Products</p>
+      <p class="text-3xl font-bold">{productCount}</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white p-6 rounded-lg border border-gray-100">
+      <h2 class="text-sm font-bold uppercase tracking-wider mb-4">Quick Actions</h2>
+      <div class="space-y-3">
+        <a href="/admin/products" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded transition-colors">
+          <span class="text-sm font-medium">Manage Products</span>
+          <span class="text-gray-400">&rarr;</span>
+        </a>
+        <a href="/admin/orders" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded transition-colors">
+          <span class="text-sm font-medium">View Orders</span>
+          <span class="text-gray-400">&rarr;</span>
+        </a>
+        <a href="/admin/pages" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded transition-colors">
+          <span class="text-sm font-medium">Edit Pages</span>
+          <span class="text-gray-400">&rarr;</span>
+        </a>
+        <a href="/" target="_blank" class="flex items-center justify-between p-3 hover:bg-gray-50 rounded transition-colors">
+          <span class="text-sm font-medium">View Store</span>
+          <span class="text-gray-400">&nearr;</span>
+        </a>
+      </div>
+    </div>
+    <div class="bg-white p-6 rounded-lg border border-gray-100">
+      <h2 class="text-sm font-bold uppercase tracking-wider mb-4">Store Info</h2>
+      <div class="space-y-3 text-sm">
+        <div class="flex justify-between"><span class="text-gray-500">Domain</span><span class="font-medium">intru.in</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Platform</span><span class="font-medium">Astro + Cloudflare</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Database</span><span class="font-medium">Cloudflare D1</span></div>
+        <div class="flex justify-between"><span class="text-gray-500">Payments</span><span class="font-medium">Razorpay</span></div>
+      </div>
+    </div>
+  </div>
+</AdminLayout>

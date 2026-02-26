@@ -1,0 +1,80 @@
+---
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import { getAllPages } from '@/lib/db';
+
+const db = Astro.locals.runtime.env.DB;
+let pages: Awaited<ReturnType<typeof getAllPages>> = [];
+
+try {
+  pages = await getAllPages(db);
+} catch {
+  // DB not connected
+}
+---
+
+<AdminLayout title="Pages | Admin" activeTab="pages">
+  <h1 class="text-2xl font-bold mb-8">Content Pages</h1>
+
+  <div class="space-y-6">
+    {pages.map(page => (
+      <div class="bg-white p-6 rounded-lg border border-gray-100" x-data={`{
+        editing: false,
+        form: { title: ${JSON.stringify(page.title)}, content: ${JSON.stringify(page.content || '')}, meta_title: ${JSON.stringify(page.meta_title || '')}, meta_description: ${JSON.stringify(page.meta_description || '')} },
+        saving: false,
+        async save() {
+          this.saving = true;
+          await fetch('/api/admin/pages', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ slug: '${page.slug}', ...this.form })
+          });
+          this.saving = false;
+          this.editing = false;
+          window.location.reload();
+        }
+      }`}>
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-lg font-bold">{page.title}</h2>
+            <p class="text-xs text-gray-400">/{page.slug} &middot; Last updated: {new Date(page.updated_at).toLocaleDateString()}</p>
+          </div>
+          <div class="flex gap-3">
+            <a href={`/legal/${page.slug}`} target="_blank" class="text-xs text-gray-500 hover:text-black font-medium">View &nearr;</a>
+            <button @click="editing = !editing" class="text-xs text-blue-600 hover:text-blue-800 font-medium cursor-pointer" x-text="editing ? 'Cancel' : 'Edit'"></button>
+          </div>
+        </div>
+
+        <div x-show="editing" x-cloak class="space-y-4 mt-4">
+          <div>
+            <label class="text-xs font-medium text-gray-500 block mb-1">Title</label>
+            <input x-model="form.title" type="text" class="w-full border border-gray-200 px-3 py-2 text-sm rounded outline-none focus:border-black" />
+          </div>
+          <div>
+            <label class="text-xs font-medium text-gray-500 block mb-1">Content (HTML)</label>
+            <textarea x-model="form.content" rows="10" class="w-full border border-gray-200 px-3 py-2 text-sm rounded outline-none focus:border-black font-mono resize-y"></textarea>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-medium text-gray-500 block mb-1">Meta Title</label>
+              <input x-model="form.meta_title" type="text" class="w-full border border-gray-200 px-3 py-2 text-sm rounded outline-none focus:border-black" />
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-500 block mb-1">Meta Description</label>
+              <input x-model="form.meta_description" type="text" class="w-full border border-gray-200 px-3 py-2 text-sm rounded outline-none focus:border-black" />
+            </div>
+          </div>
+          <button @click="save()" :disabled="saving" class="bg-black text-white px-6 py-2 text-xs font-bold uppercase tracking-widest hover:bg-gray-800 rounded disabled:opacity-50 cursor-pointer">
+            <span x-show="!saving">Save Changes</span>
+            <span x-show="saving" x-cloak>Saving...</span>
+          </button>
+        </div>
+      </div>
+    ))}
+
+    {pages.length === 0 && (
+      <div class="bg-white p-8 rounded-lg border border-gray-100 text-center text-gray-400 text-sm">
+        No pages found. Run the seed.sql to create default pages.
+      </div>
+    )}
+  </div>
+</AdminLayout>

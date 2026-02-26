@@ -1,0 +1,50 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getPageBySlug } from '@/lib/db';
+
+const slugMap: Record<string, string> = {
+  privacy: 'privacy',
+  terms: 'terms',
+  returns: 'returns',
+  shipping: 'shipping',
+};
+
+const { slug } = Astro.params;
+if (!slug || !slugMap[slug]) return Astro.redirect('/');
+
+const db = Astro.locals.runtime.env.DB;
+let page: Awaited<ReturnType<typeof getPageBySlug>> = null;
+
+try {
+  page = await getPageBySlug(db, slug);
+} catch {
+  // DB not connected
+}
+
+// Fallback content
+const fallback: Record<string, { title: string; content: string }> = {
+  privacy: { title: 'Privacy Policy', content: '<p>Privacy policy content will be available soon.</p>' },
+  terms: { title: 'Terms & Conditions', content: '<p>Terms and conditions will be available soon.</p>' },
+  returns: { title: 'Returns & Exchanges', content: '<p>Returns and exchange policy will be available soon.</p>' },
+  shipping: { title: 'Shipping Policy', content: '<p>Shipping policy will be available soon.</p>' },
+};
+
+const title = page?.title ?? fallback[slug!]?.title ?? 'Page';
+const content = page?.content ?? fallback[slug!]?.content ?? '';
+const metaTitle = page?.meta_title ?? `${title} | intru`;
+const metaDescription = page?.meta_description ?? `Read the ${title} for intru.in`;
+---
+
+<BaseLayout title={metaTitle} description={metaDescription}>
+  <div class="container-custom py-24 md:py-32 max-w-4xl">
+    <!-- Breadcrumb -->
+    <nav class="text-[0.625rem] font-bold uppercase tracking-[0.2em] text-gray-400 mb-8">
+      <a href="/" class="hover:text-black transition-colors">Home</a>
+      <span class="mx-2">/</span>
+      <span class="text-black">{title}</span>
+    </nav>
+
+    <h1 class="text-4xl font-display font-bold mb-8">{title}</h1>
+    <div class="prose prose-lg max-w-none text-gray-500 [&_h2]:text-black [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mt-8 [&_h2]:mb-4 [&_p]:leading-relaxed [&_p]:mb-4 [&_a]:text-red-600 [&_a]:hover:underline [&_strong]:text-gray-700" set:html={content} />
+  </div>
+</BaseLayout>
